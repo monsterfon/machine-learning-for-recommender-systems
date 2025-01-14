@@ -1,0 +1,1278 @@
+(13) Vizualizacija značilk fizioloških signalov in
+napovedovanje afektivnega stanja
+torek, 29. oktober 2024 11:51
+
+Podatki poskusa WESAD zajemajo množico različnih signalov dveh senzorjev. Cilj je spoznati
+posamezne signale (EDA, temperatura, dihanje, gibanje, EKG ... ), ter izračunati primerne
+značilke (povprečje, st.deviacija .. ). Primerjati je potrebno značilke po osebah ter po stanjih
+(stres, meditacija, .. ) in na tej podlagi določiti, katere so najbolj primerne za napoved stanja
+osebe.
+
+Informacije:
+1. Podatkovna množica WESAD
+
+
+Navodila:
+ v kombinaciji z izbranimi fiziol. signali, ter njihovimi
+značilkami. Poleg standardnih značilk dodajte še časovne značilke.
+
+Ugotovite, katere kombinacije značilk so najbolj učinkovite za napoved stresa/meditacije pri na
+meritvah testne osebe.
+
+Pričakovani koraki:
+Osnovni projekt je podan, ter testna baza
+1. Spoznavanje, vizualizacija signalov
+2. Skaliranje vrednosti značilk (normalizacija)
+3. Vizualizacija značilk v času ter glede na stanje
+4. Identifikacija, katere značilke so najbolj korelirane s ciljnim stanjem (npr. stres)
+. Dodatne časovne značilke
+1. Izdelava in vizualizacija
+. Testiranje izbranih modelov strojnega učenja in vizualizacija rezultatov
+
+Naloge
+
+Izrisati interaktivni časovni graf izbranega signala za izbrano osebo, z dodatnimi signali
+dodatno: vizualizirati fazo poskusa oziroma stanje osebe (stres, .. ), npr kot barvo
+ali kot dodaten časovni signal (številke 0 .. 6 pomenijo fazo)
+skupna časovna os (potek poskusa)
+
+Fon, Žiga
+
+
+Tutorial
+In this tutorial we will describe how biosppy enables the development of Pattern Recognition and Machine Learning workflows for the analysis of biosignals. The major goal of this package is to make these tools easily available to anyone wishing to start playing around with biosignal data, regardless of their level of knowledge in the field of Data Science. Throughout this tutorial we will discuss the major features of biosppy and introduce the terminology used by the package.
+
+What are Biosignals?
+Biosignals, in the most general sense, are measurements of physical properties of biological systems. These include the measurement of properties at the cellular level, such as concentrations of molecules, membrane potentials, and DNA assays. On a higher level, for a group of specialized cells (i.e. an organ) we are able to measure properties such as cell counts and histology, organ secretions, and electrical activity (the electrical system of the heart, for instance). Finally, for complex biological systems like the human being, biosignals also include blood and urine test measurements, core body temperature, motion tracking signals, and imaging techniques such as CAT and MRI scans. However, the term biosignal is most often applied to bioelectrical, time-varying signals, such as the electrocardiogram.
+
+The task of obtaining biosignals of good quality is time-consuming, and typically requires the use of costly hardware. Access to these instruments is, therefore, usually restricted to research institutes, medical centers, and hospitals. However, recent projects like BITalino or OpenBCI have lowered the entry barriers of biosignal acquisition, fostering the Do-It-Yourself and Maker communities to develop physiological computing applications. You can find a list of biosignal platform here.
+
+The following sub-sections briefly describe the biosignals covered by biosppy.
+
+Blood Volume Pulse
+Photoplethysmogram (PPG) signals is an optical technique used to detect blood volume changes within the microvascular bed of your tissue. A PPG wave is made of a pulsatile physiological measurement taken at the skin surface. The baseline is made of a superimposed varying baseline with various lower frequency componenets attributed to respiration, thermoregulation, and sympathetic nervous system activity. Due to it’s low cost and simplicity it can be found within personal devices such as Smart Watches, Phones, and handheld heart rate monitors.
+
+Electrocardiogram
+Electrocardiogrm (ECG/EKG) signals are a measure of the electrical heartbeat of the heart. Each heartbeat an electrical impulse travels through the heart, causing your heart to pump blood from the heart throughout your body. Often times upto twelve non-invasive electrodes are attached to your chest and limbs. They record the electrical signals that result in a heartbeat and output them onto ECG charts either on paper or on a computer. ECG/EKG signals can be processed in time and frequency domains. A healthy adult ECG/EKG is often predictable while adults with heart problems are often unpredictable.
+
+Electrodermal Activity
+Electrodermal Activity (EDA) signals are measures of the electrical characteristics of the skin using methods such as skin potential (SP), skin conductance response (SCR), skin potential response (SPR). Training in EDA allows the patient to become more aware of stress. It is not commonly used and, when used, it is often in conjunction with other forms of biofeedback. Because EDA measures only skin changes, it does not provide feedback about more complex physiological reactions. When used for treatment, it tends to be as a monitoring system for unresolved issues in psychotherapy or for general stress.
+
+Electroencephalogram
+Electroencephalogram (EEG) signals are measures of electrical activity in the brain using electrodes attached to the scalp. Generally the process used to get an EEG is non-invasive. An EEG measures voltage fluctuations resulting from ionic currents within nuerons, which can be recorded over a period of time thus allowing for analysis within the time domain. The recording is obtained by placing electrodes on the scalp with a conductive gel, usually after preparing the scalp area by light abrasion to reduce impedance due to dead skin cells.
+
+Electromyogram
+Electromyogram (EMG) signals are a measure of the electrical activity of muscles. There are two types of sensors that can be used to record this electrical activity, in particular surface EMG (sEMG), measured by non-invasive electrodes, and intramuscular EMG. Out of the two, sEMG allows for non-invasive electrodes to be applied at the body surface, that measure muscle activity. In sEMG, contact with the skin can be done with standard pre-gelled electrodes, dry Ag/AgCl electrodes or conductive textiles. Normally, there are three electrodes in an sEMG interface: two electrodes work on bipolar differential measurement and the other one is attached to a neutral zone, to serve as the reference point. After being recorded, this signal can be processed in time, frequency and time-frequency domains. In an EMG signal, when the muscle is in a relaxed state, this corresponds to the baseline activity. The bursts of activity match the muscular activations and have a random shape, meaning that a raw recording of contractions cannot be exactly reproduced. The onset of an event corresponds to the beginning of the burst.
+
+Respiration
+Respiration (Resp) signals are…
+
+What is Pattern Recognition?
+Pattern Recognition is an automated analytical recognition of patterns and regularities within a piece of data. Often time stastical fields such as Machine Learning rely on pattern recognition to find similarities within data in order to predict future data.
+
+A Note on Return Objects
+Before we dig into the core aspects of the package, you will quickly notice that many of the methods and functions defined here return a custom object class. This return class is defined in biosppy.utils.ReturnTuple. The goal of this return class is to strengthen the semantic relationship between a function’s output variables, their names, and what is described in the documentation. Consider the following function definition:
+
+
+2
+Introducing WESAD, a Multimodal Dataset for Wearable
+Stress and Affect Detection
+Philip Schmidt∗
+Robert Bosch GmbH
+Corporate Research, Germany
+firstname.lastname@de.bosch.com
+Attila Reiss, Robert Dürichen,
+Claus MarbergerRobert Bosch GmbH
+Corporate Research, Germany
+Kristof Van LaerhovenUniversity of Siegen
+Siegen, Germany
+kvl@eti.uni-siegen.de
+ABSTRACT
+Affect recognition aims to detect a person’s affective state based
+on observables, with the goal to e.g. improve human-computer
+interaction. Long-term stress is known to have severe implica-
+tions on wellbeing, which call for continuous and automated stress
+monitoring systems. However, the affective computing commu-
+nity lacks commonly used standard datasets for wearable stress
+detection which a) provide multimodal high-quality data, and b)
+include multiple affective states. Therefore, we introduce WESAD,
+a new publicly available dataset for wearable stress and affect de-
+tection. This multimodal dataset features physiological and motion
+data, recorded from both a wrist- and a chest-worn device, of 15
+subjects during a lab study. The following sensor modalities are
+included: blood volume pulse, electrocardiogram, electrodermal
+activity, electromyogram, respiration, body temperature, and three-
+axis acceleration. Moreover, the dataset bridges the gap between
+previous lab studies on stress and emotions, by containing three
+different affective states (neutral, stress, amusement). In addition,
+self-reports of the subjects, which were obtained using several es-
+tablished questionnaires, are contained in the dataset. Furthermore,
+a benchmark is created on the dataset, using well-known features
+and standard machine learning methods. Considering the three-
+class classification problem (baseline vs. stress vs. amusement), we
+achieved classification accuracies of up to 80 %. In the binary case
+(stress vs. non-stress), accuracies of up to 93 % were reached. Finally,
+we provide a detailed analysis and comparison of the two device
+locations (chest vs. wrist) as well as the different sensor modalities.
+KEYWORDS
+Affective computing, Emotion recognition, Stress detection, Multi-
+modal dataset, Sensor fusion, Benchmark, User study
+ACM Reference Format:
+Philip Schmidt, Attila Reiss, Robert Dürichen, Claus Marberger, and Kristof
+Van Laerhoven. 2018. Introducing WESAD, a Multimodal Dataset for Wear-
+able Stress and Affect Detection. In 2018 International Conference on Multi-
+modal Interaction (ICMI ’18), October 16–20, 2018, Boulder, CO, USA. ACM,
+New York, NY, USA, 9 pages. https://doi.org/10.1145/3242969.3242985
+∗Also with University of Siegen.
+Permission to make digital or hard copies of all or part of this work for personal or
+classroom use is granted without fee provided that copies are not made or distributed
+for profit or commercial advantage and that copies bear this notice and the full citation
+on the first page. Copyrights for components of this work owned by others than ACM
+must be honored. Abstracting with credit is permitted. To copy otherwise, or republish,
+to post on servers or to redistribute to lists, requires prior specific permission and/or a
+fee. Request permissions from permissions@acm.org.
+ICMI ’18, October 16–20, 2018, Boulder, CO, USA
+©2018 Association for Computing Machinery.
+ACM ISBN 978-1-4503-5692-3/18/10. . . $15.00
+https://doi.org/10.1145/3242969.3242985
+1 INTRODUCTION
+Affective computing is an emerging field, inspired by the vision
+to improve human-computer interaction by building empathic ma-
+chines. Empathic machines detect the affective state of a human
+user, adapt their ’behaviour’ accordingly, and might even exhibit
+own emotional traits. From a health care point of view, stress, de-
+fined as ’nonspecific response of the body to any demand upon it’
+[25], is a particularly interesting affective state. This is due to the
+harmful effects of long-term stress, which can range from headaches
+and troubled sleeping to an increased risk of cardiovascular diseases
+[4, 16, 22]. According to the British Health and Safety Executive
+(HSE), stress accounted for 37% of all work-related ill health cases
+in 2015/16 [1]. These severe side effects of stress call for automated
+detection methods.
+In order to build a reliable stress detection system, it is important
+to understand that stress is primarily a physiological response to a
+stimulus, triggered by the sympathetic nervous system (SNS). Dur-
+ing this response a mixture of hormones like cortisol or adrenaline
+are released, leading to an increased breathing/heart rate and mus-
+cle tension. These physiological changes prepare the organism for a
+physical reaction (’fight-or-flight’). As shown by Kreibig et al. [13]
+the physiological responses to certain emotional stimuli are also to
+some extent specific. A psychological model well suited for captur-
+ing affective states is Russel’s circumplex model [23]. According to
+this model, affective states can be mapped into a 2D space, using
+for example the axes valence and arousal. The valence dimension
+indicates how negative/positive an affective state is perceived. On
+the arousal axis, which is known to be impacted by stress [9], the
+state is rated in terms of excitement.
+In recent years, the specificity of the physiological responses to
+stress and emotional stimuli was utilised to train machine learn-
+ing models to predict the affective state of a subject. Using deep
+neural networks, trained on audio and/or visual data, a high perfor-
+mance in emotion classification is achieved [17, 29]. However, these
+models are quite demanding in terms of computational resources
+and are only partially applicable on embedded devices. Classify-
+ing stress from audio samples was also successfully done, e.g., by
+Lu [14]. However, recording audio and/or video data continuously
+is in terms of privacy quite intrusive, and concerning technical
+feasibility difficult. Hence, these modalities are only available in
+specific occasions. Wearable electronic devices, in contrast, are only
+minimally intrusive. Devices like smart phones/watches are already
+popular among users. Contemporary wearables can be used to track
+steps and monitor other physical activities. To keep up with the
+current trend to quantify vital functions, a desirable next step is
+to infer affective states based on multimodal wearable sensor data.
+Plarre et al. [20] and Hovsepian et al. [8] trained stress detection
+systems on peripheral physiological data utilising electrocardio-
+gram (ECG), respiration (RESP) and 3-axis accelerometer (ACC)
+data, recorded by a chest-worn device. Gjoreski et al. [5] used the
+data of a wrist-worn device recording blood volume pulse (BVP),
+electrodermal activity (EDA), skin temperature (TEMP), and ACC
+to train a stress detection model. In order to detect emotions in
+response to music, Kim et al. [10] used ECG, RESP, EDA, and elec-
+tromyogram (EMG) data. Distinguishing stress and emotions is not
+a trivial task, since both have a strong impact on the autonomous
+nervous system. However, in current affective computing research,
+stress and emotion detection from wearables are commonly tackled
+as two disjoint topics. Our work addresses this shortcoming. This is
+important since, for a holistic affective user model, assessing both
+stress and emotions is required.
+As outlined above, multimodal setups have been used for stress
+or emotion detection tasks. However, in contrast to many other
+research fields, there is a lack of commonly used, standardised
+benchmarking datasets for stress and affect detection. Hence, it is
+difficult to compare results obtained by different researchers. Our
+work intends to address this shortcoming as well.
+The main contributions of this paper are threefold:
+(1) A new multimodal, publicly available dataset1 is presented.
+The data has been recorded using two different devices
+(one chest-based and one wrist-based), each including high-
+resolution physiological (BVP, ECG, EDA, EMG, RESP, and
+TEMP) and motion (ACC) modalities.
+(2) The dataset bridges the gap between previous lab studies on
+stress and emotions, by containing three different affective
+states (neutral, stress, amusement). In addition, the dataset
+features self-reported values on the perceived affective state
+of the subjects, which were obtained using several estab-
+lished questionnaires. These self-reports can be used to train
+personalised classifiers.
+(3) A benchmark is created using a large amount of well-known
+features (extracted from physiological and motion signals)
+and common machine learning methods (Decision Tree (DT),
+Random Forest (RF), AdaBoost (AB), Linear Discriminant
+Analysis (LDA) and k-nearest neighbour (kNN)).
+2 RELATED WORK
+In recent years, a number of studies have been conducted with the
+aim to elicit and detect stress based on physiological parameters.
+For this purpose, stressors like public speaking, mental arithmetic or
+physical stressors (e.g. cold pressor) were employed [5, 8, 20]. How-
+ever, these approaches focus on detecting and classifying stressful
+vs. non-stressful states and do not take any other affective states
+into account. Classical machine learning algorithms like the RF
+were employed to the stress classification task, achieving a 72% ac-
+curacy on a three class (no, low, high stress) problem [5]. Kim et al.
+[10] used four songs to elicit different target emotions, which were
+then classified using LDA, achieving a subject-independent correct
+classification ratio of 70%. However, the topic of combining stress
+and emotion detection systems has only received little attention.
+Zenonos et al. [32] presented a mood recognition system capable of
+1 The dataset introduced in this paper is made publicly available, and can be downloaded
+from: https://ubicomp.eti.uni-siegen.de/home/datasets/icmi18/.
+distinguishing eight different moods with a subject-independent ac-
+curacy of 62.14%. However, as the system was trained and tested on
+only four subjects, the generalisation properties are questionable.
+Although there is intensive research in the field of affective
+computing from wearable devices, there is only very little publicly
+available data. Healey et al. [6] published a dataset on driver stress.
+This dataset features ECG (496 Hz), EDA (31 Hz), RESP (31 Hz),
+and EMG (15.5 Hz) data. Moreover, Picard et al. [19] published a
+dataset containing physiological data recorded from one person,
+who is subject to eight different emotional stimuli over 20 days.
+More recently, Koestra et al. [12] published DEAP, a database for
+emotion analysis using physiological signals. The dataset contains
+electroencephalogram (EEG) (512 Hz), facial videos and peripheral
+physiological signals (recorded at 512 Hz, then down-sampled to
+256 Hz). The data was recorded while the subjects watched 40 one-
+minute excerpts from music videos. The final 40 clips were chosen
+from a larger pool of videos, by asking volunteers to rate the clips
+in terms of their valence and arousal value and then choosing the
+ones that had the strongest rating with the smallest variance.
+The way humans perceive and react to an affective stimulus is
+very subject dependent. Hence, personalisation is an important
+issue. In order to train personalised models, subjective ratings of
+the different affective stimuli are required. These ratings are com-
+monly generated by self-assessment of the subjects. For instance,
+manikins can be used to generate personalised valence, arousal,
+dominance, and liking labels [12]. In the study of Plarre et al. [20]
+subjects reported their stress levels by answering five questions
+(Cheerful?, Happy?, Angry/Frustrated?, Nervous/Stressed?, Sad?)
+on a four point scale (NO, no, yes, YES). Other studies employed
+more complex questionnaires such as the PANAS [18] and STAI
+[5]. In field studies, smart phone apps offer ideal platforms for
+self-reports, e.g., on mood [32].
+In this paper we present a novel dataset for stress and affect
+detection. The subjects (n =15) were exposed to different affective
+stimuli (stress and amusement). In addition, a baseline and two
+meditation periods (introduced to de-excite the participants after a
+stimulus) were recorded. The dataset contains high resolution phys-
+iological (ECG, EDA, EMG, RESP, and TEMP) and motion (ACC)
+data sampled at 700 Hz from a chest-worn device, and lower resolu-
+tion data from a wrist-worn device. Finally, the data of each subject
+is linked to several self-reports, which represent the subjective ex-
+perience during an affective stimulus. The dataset is well-suited to
+benchmark (personalised) stress and affect detection algorithms, a
+first evaluation is presented in this paper.
+3 DATA COLLECTION
+This section provides details on the subjects, employed sensors,
+sensor placement, the study protocol, and the self-reports. The
+study was approved by the workers council and the data security
+officer of our research center.
+3.1 Participants
+Due to the defined study protocol, we specifically targeted graduate
+students at our research facility. Exclusion criteria, stated in the
+study invitation, were pregnancy, heavy smoking, mental disorders,
+Figure 1: Placement of the RespiBAN and the ECG, EDA,
+EMG, TEMP sensors.
+chronic and cardiovascular diseases. In total, 17 subjects partic-
+ipated in our study. Due to sensor malfunction, the data of two
+participants had to be discarded. The remaining 15 subjects had a
+mean age of 27.5 ± 2.4 years. Twelve subjects were male and the
+other three subjects were female.
+3.2 Sensor Setup and Placement
+For the data collection, we used both a chest- and a wrist-worn
+device: a RespiBAN Professional2 and an Empatica E43, respectively.
+The RespiBAN itself is equipped with sensors to measure ACC
+and RESP, and can function as a hub for up to four additional
+modalities. Using the four analog ports, ECG, EDA, EMG, and TEMP
+were recorded. All signals were sampled at 700 Hz. The RespiBan
+was placed around the subject’s chest (see Figure 1). The RESP is
+recorded via a respiration inductive plethysmograph sensor. The
+ECG data was recorded via a standard three point ECG. In order to
+allow the subject to move as freely as possible, the EDA signal was
+recorded on the rectus abdominis (the abdomen has a high density
+of sweat glands [28], hence suitable for EDA measurement) and
+the TEMP sensor was placed on the sternum. The EMG data was
+recorded on the upper trapezius muscle on both sides of the spine.
+In order to avoid wireless packet loss, the recorded data was stored
+locally and transferred to a computer for further processing after
+the experiment. All subjects wore the Empatica E4 on their non-
+dominant hand. The E4 records BVP (64 Hz), EDA (4 Hz), TEMP (4
+Hz), and ACC (32 Hz).
+3.3 Study Protocol
+The goal of the study was to elicit three different affective states
+(neutral, stress, amusement) in the participants. In addition, the
+subjects were asked to follow a guided meditation in order to de-
+excite them after the stress and amusement conditions. The different
+parts of the study protocol are detailed below:
+Preparation: The participants had to avoid caffeine and tobacco
+in the hour before the experiment was to begin. Further, the subjects
+were asked to do no strenuous exercise on the day of the study.
+Prior to the study the participants read and signed a consent form.
+Upon arrival at the study location, the participants were equipped
+with the sensors and a short sensor test was conducted. Then the
+2 http://www.biosignalsplux.com/en/respiban-professional3 http://www.empatica.com/research/e4/
+RespiBAN and E4 were synchronised manually via a double tap
+gesture.
+Baseline condition: After the subjects had been equipped with
+the sensors, a 20 minute baseline was recorded. During the baseline
+the subjects were sitting/standing at a table and neutral reading
+material (magazines) was provided. The baseline condition aimed
+at inducing a neutral affective state.
+Amusement condition: During the amusement condition, the
+subjects watched a set of eleven funny video clips. Each clip was
+followed by a short neutral sequence of five seconds. Eight of the
+short clips were chosen from the corpus presented by Samson et al.
+[24]. The remaining three videos were chosen by the authors. In
+total, the amusement condition had a length of 392 seconds.
+Stress condition: The subjects were exposed to the well-studied
+Trier Social Stress Test (TSST) [11], which consists of a public
+speaking and a mental arithmetic task. These tasks are known to
+elicit stress reliably [20], as they are social evaluative and inflict
+a high mental load on the subjects. In our version of the TSST,
+the study participants first had to deliver a five minute speech on
+their personal traits in front of a three-person panel, focusing on
+strengths and weaknesses. The subjects were told that the three
+panel members were human resources specialists from our research
+facility. In order to boost their career options, the subjects were told
+to try to leave the best possible impression. The study participants
+had three minutes to prepare their speech but they were not allowed
+to use their notes during the presentation. After the speech, the
+panel asked the subjects to count from 2023 to zero, doing steps
+of 17. Moreover, whenever the subjects made a mistake, they had
+to start over. For both tasks, the subjects were given five minutes
+by the panel and hence the TSST had a total length of about ten
+minutes. After the TSST the study participants were given a ten-
+minute rest period.
+Meditation: The amusement and stress conditions, which both
+aimed at exciting the subjects, were followed by a guided meditation.
+The aim of this meditation was to ’de-excite’ the subjects and bring
+them back to a close to neutral affective state. The meditation was
+based on a controlled breathing exercise, instructed via an audio
+track. Subjects followed the instructions with closed eyes, while
+sitting in a comfortable position. The meditation had a duration of
+seven minutes.
+Recovery: At the end of the protocol, the sensors were again
+synchronised via a double tap gesture. Then, the sensors were
+removed and the subjects were informed that the panel members
+were just ’normal’ researchers.
+In total, the study had a duration of about two hours. Figure 2
+summarises the protocol (without the preparation and the recovery
+period). As detailed above, our lab protocol features two major
+stimuli: an amusement condition and a stressful condition. These
+two conditions were interchanged (see Figure 2) between different
+subjects in order to avoid effects of order. In addition to these stim-
+uli, a baseline and two meditation periods were recorded. In order
+to induce variance in the subjects’ posture, the baseline, amusement
+and stress conditions were conducted either standing or sitting. For
+each condition, approximately half of the subjects were standing
+and the other half were sitting. During the meditation, however, all
+subjects were seated.
+Version A
+Baseline Amusement Medi I Stress Rest Medi II
+Version B
+Baseline Stress Rest Medi I Amusement Medi II
+Figure 2: The two different versions of study protocol. The
+red/dark boxes refer to filling in self-reports.
+3.4 Obtaining Ground Truth
+In order to validate the study protocol, we collected five self-reports
+of each participant (timing indicated by red/dark boxes in Fig-
+ure 2). Each of the self-reports contained several questionnaires.
+Firstly, participants filled in a Positive and Negative Affect Schedule
+(PANAS), which consists of 20 items (ten positive and ten negative
+items) each rated on a five point Likert scale. PANAS reliably as-
+sesses positive (PA) and negative affect (NA), which are two largely
+independent dimensions [30]. PA reaches from ’sad and lethargic’
+(low value) to ’concentrated and energetic’ (high value). NA ranges
+from ’calmness’ (low value) to ’subjective distress’ (high value).
+Furthermore, we added the items Stressed?, Frustrated?, Happy?, and
+Sad?, which were scored by the subjects using the same scale as
+in PANAS. These items can be used to generate the same labels
+as used by Plarre et al. [20]. Secondly, similar to Gjoreski et al. [5],
+we used six items from the State-Trait Anxiety Inventory (STAI)
+to gain insight into the anxiety level of the participants. The items
+were chosen according to their factor loads [2], and scored on a
+four point Likert scale. Thirdly, we used Self-Assessment Manikins
+(SAM) to generate labels in the valence-arousal space [12]. Finally,
+after the TSST, nine items from the Short Stress State Questionnaire
+(SSSQ) [7] were added to the questionnaires in order to identify
+which type of stress (worry, engagement, or distress) was most
+prevalent in the subjects. The values from these questionnaires can
+be seen as subjective reports on how the participants felt during a
+condition and may be used to train personalised models. However,
+for the first evaluation presented in this paper, we used the study
+protocol as ground truth.
+4 METHODS
+The analysis and evaluation of our dataset follows the classical
+data processing chain, consisting of the following steps: prepro-
+cessing, segmentation, feature extraction, and classification. Details
+on these different steps are presented below (the first three steps
+are explained together since they depend on the specific sensor
+modality).
+4.1 Feature Extraction
+Segmentation of the (preprocessed) sensor signals was done using
+a sliding window, with a window shift of 0.25 seconds. The ACC-
+features were computed with a window size of five seconds, as
+similar window lengths are broadly applied for acceleration-based
+context recognition (e.g. Reiss et al. [21]). All features (except for
+statistical- and frequency-domain EMG-features, see below) based
+on physiological signals were computed with a window size of 60
+seconds. This window size was chosen following Kreibig et al. [13].
+In Table 1, the features extracted from the different modalities are
+displayed.
+On the raw ACC signal different statistical features, e.g. the mean
+μacc,i and standard deviation σacc,i were computed. These features
+were computed both for each axis separately (i ∈ {x,y,z})and as
+absolute magnitudes, summed over all axes (3 D). In addition, the
+peak frequency was computed for each axis separately f peak
+acc,i .
+On the raw ECG/BVP signal the heart beats were found based on
+peak detection algorithms. Using the peaks, the heart rate (HR) and
+corresponding statistical features (mean, standard deviation) were
+computed. Moreover, from the location of the heart beats the heart
+rate variablility (HRV) was derived, which is an important starting
+point for additional features. For instance, the energy in different
+frequency bands ( f xH RV ) was computed. The frequency bands (x )
+used, were the ultra low (ULF: 0.01-0.04 Hz), low (LF: 0.04-0.15 Hz),
+high (HF: 0.15-0.4 Hz) and ultra high (UHF: 0.4-1.0 Hz) band. In [15]
+the HR and HRV are described in detail.
+The EDA is controlled by the sympathetic nervous system (SNS),
+and hence it is particularly sensitive to high arousal states. First, a
+5 Hz lowpass filter was applied to the raw EDA signal, similar to
+related work [26, 27]. Then, statistical features were computed (e.g.
+mean, standard deviation, dynamic range, etc.). Furthermore, the
+raw EDA signal consists of a tonic (referred to as skin conductance
+level (SCL)) and a phasic (skin conductance response (SCR)) com-
+ponent. The SCL represents a slowly varying baseline conductivity,
+while the SCR is a short term response to a stimulus. In order to
+separate these two components, the method proposed by Choi et
+al. [3] was applied. After separating the SCL and SCR, additional
+features, e.g. number of peaks in the SCR (#SC R ), were computed.
+Details about the EDA-related features can be found in Choi et al.
+[3] and Healey et al. [6].
+Two different processing chains were applied to the raw EMG
+signal. In the first chain, the DC component was removed by ap-
+plying a highpass filter. Then, the filtered signal was cut into 5-
+second windows, and statistical and frequency-domain features
+(e.g. peak frequency) were computed. In addition, the spectral en-
+ergy (PSD (fE MG )) was computed in seven evenly spaced frequency
+bands from 0 to 350 Hz. Following the second processing chain, a
+lowpass filter (50 Hz) was applied to the raw EMG signal. Next, the
+processed signal was segmented into 60-second windows. On these
+windows different peak features, e.g. number #peaks
+E MG and mean
+amplitude μAmp
+E MG , were computed. For a more detailed description
+of EMG-based features, we refer the reader to Wijsman et al. [31].
+Before computing features on the RESP signal, a bandpass filter
+(cut off frequencies: 0.1 and 0.35 Hz) was applied. Next, a peak detec-
+tor was used to identify minima and maxima. Following Plarre et al.
+[20] the mean and standard deviation of the inhalation/exhalation
+(μI ,σI ,μE ,and σE ) were computed. In addition, the ratio between
+inhalation and exhalation (I /E), stretch ranдeRES P , inspiration vol-
+ume volinsp , respiration rate rateRES P , and respiration duration
+were derived ∑RES P [20].
+Table 1: List of extracted features. Abbreviations: # = number
+of, ∑= sum of, STD = standard deviation.
+Feature Description
+ACC
+μACC,i ,σACC,i Mean, STD for each axis sepa-
+i ∈{x,y,z,3D } rately and summed over all axes
+∥∫
+ACC,i ∥ i ∈{x,y,z,3D } Absolute integral for each/all axes
+f pe ak
+ACC,j j ∈{x,y,z } Peak frequency for each axis i
+μH R,σH R Mean, STD of the HR
+μH RV ,σH RV Mean, STD of the HRV
+N N 50,p N N 50 # and percentage of HRV inter-
+vals differing more than 50 ms
+T I N N Triangular interpolation index
+r msH RV Root mean square of the HRV
+ECG f xH RV Energy in ultra low, low, high,
+and x ∈{U LF ,LF ,H F ,U H F } and ultra high frequency
+BVP component of the HRV
+f LF /H F
+H RV Ratio of LF and HF component
+∑fx
+∑the freq. components
+x ∈{U LF ,LF ,H F ,U H F } in ULF-HF
+r el fx Relative power of freq.
+component
+LFnor m,H Fnor m Normalised LF and HF
+component
+EDA
+μE DA,σE DA Mean, STD of the EDA signal
+minE DA,maxE DA Min and max value
+∂E DA,r anдeE DA Slope and dynamic range
+μSC L,σSC L,σSC R Mean, STD of the SCR/SCL
+cor r (SC L,t )Correlation btw SCL and time
+#SC R # identified SCR segments
+∑Amp
+SC R ,∑tSC R
+∑SCR startle magnitudes and
+response durations∫
+scr Area under the identified SCRs
+μE MG ,σE MG Mean, STD of EMG signal
+r anдeE MG Dynamic range
+EMG ∥∫
+E MG ∥ Absolute integral
+ ̃πE MG Median of the EMG signal
+P 10E MG ,P 90E MG 10th and 90th percentile
+μf
+E MG , ̃fE MG ,Mean, median and
+f pe ak
+E MG Peak frequency
+P S D (fE MG )Energy in seven bands
+#pe aks
+E MG # peaks
+μAmp
+E MG ,σAmp
+E MG Mean, STD of peak amplitudes
+∑Amp
+E MG , ̄∑Amp
+E MG
+∑and normalised ∑of
+peak amplitudes
+RESP μx ,σx Mean, STD of inhalation (I)
+x ∈{I,E } and exhalation (E) duration
+I /E Inhalation/exhalation ratio
+r anдeRES P ,volinsp Stretch, Volume
+r at eRES P Breath rate∑RES P Respiration duration
+TEMP μT E M P ,σT E M P Mean, STD of the TEMP
+minT E M P ,maxT E M P Min, max TEMP
+r anдeT E M P Dynamic range
+∂T E M P Slope
+On the raw TEMP signal common statistical features (mean,
+standard deviation, min, max, etc.) were computed. In addition, the
+slope of the signal ∂T E M P is used as a feature.
+4.2 Classification Algorithms
+The extracted features, detailed above, serve as input for the classi-
+fication step. Five machine learning algorithms were applied and
+compared within our benchmark: Decision Tree (DT), Random For-
+est (RF), AdaBoost (AB), Linear Discriminant Analysis (LDA), and
+k-Nearest Neighbour (kNN). As the entire data processing chain
+was implemented in Python, we used the scikit-learn implementa-
+tion of the aforementioned classifiers. For the AB ensemble learner,
+decision tree was used as base estimator. For each of the decision-
+tree-based classification algorithms (DT, RF, AB), information gain
+was used to measure the quality of splitting decision nodes, and
+the minimum number of samples required to split a node was set
+to 20. The number of base estimators was set to 100 for both of the
+ensemble learners (RF and AB). Moreover, a LDA and a kNN (with
+k=9) classifier were used for classification.
+4.3 Evaluation Metric
+We used accuracy and F1-score as evaluation metrics. Accuracy
+represents the number of correctly classified instances out of all
+samples. The F1-score is defined as the harmonic mean of preci-
+sion, indicating the reliability of the results in a certain class, and
+recall, representing a measure of completeness. To obtain the final
+F1-score, precision and recall were computed for each class sepa-
+rately and then averaged. Applying the F1-score is recommended
+for unbalanced classification tasks, which is the case when using
+WESAD (since the various conditions were carried out at differ-
+ent lengths during the study protocol). All models were evaluated
+using the leave-one-subject-out (LOSO) cross-validation (CV) pro-
+cedure. Hence, the results indicate how a model would generalise
+and perform on data of a previously unseen subject.
+5 RESULTS AND DISCUSSION
+This section provides first an analysis of the collected self-reports.
+Second, detailed results on the evaluation of the recorded sensor
+data and processing chain are given, including a discussion on
+the importance of the different sensor modalities and extracted
+features. For the data analysis and evaluation presented here, we
+only consider the data recorded during the baseline, stress (TSST),
+and amusement parts of the study protocol (see Figure 2.)
+5.1 Evaluation of the Self-reports
+In this work, the analysis of the self-reported measures (see subsec-
+tion 3.4) has been used to verify that the design of the experimental
+conditions was suitable to manipulate the subjects’ affective state
+as desired. Table 2 shows the results (mean and standard deviation)
+of the three measures and subscales, respectively.
+Comparing the self-reports after the amusement and baseline
+condition reveals that the amusement condition had the desired
+effect: the subjects report slightly higher scores on valence and
+arousal (dimensional approach, DIM) and less anxiety (STAI). How-
+ever, the effect of the condition is rather small. In contrast, the
+impact of the stress condition is pronounced, across all question-
+naires. The analysis of the SSSQ scores indicates that the subjects
+felt more engaged and worried than distressed during the TSST
+task (Engagement: 11.7 ±2.3, Distress: 6.0 ±2.9, Worry: 10.6 ±2.3).
+Table 2: Evaluation of the questionnaires.
+PANAS STAI DIM
+positive negative valence arousal
+Baseline 25.5±6.0 12.3±2.0 10.8±1.9 6.7±0.9 2.5±0.9
+Stress 31.3±4.7 22.0±6.4 18.5±2.0 4.5±1.6 6.8±1.8
+Amusement 25.8±5.1 11.4±2.1 9.3±2.0 7.5±0.6 3.0±1.6
+The high ’Engagement’ score might result from the subjects’ high
+motivation to perform well in the given task. The high ’Worry’
+score suggests that the subjects were determined to give a good
+impression on the panel. In our opinion, these scores demonstrate
+that most subjects believed our cover story of the TSST.
+After the stress condition, the PANAS showed increased scores
+with respect to positive (PA) and negative affect (NA). The high
+PA score indicates that subjects felt energised and concentrated
+during the TSST, which coincides with the high engagement values
+reported in the SSSQ. The elevated NA score indicates an increased
+level of subjective distress. The DIM scores support these observa-
+tions, indicating an increase in arousal and a decrease in valence.
+Moreover, the STAI shows elevated values after the TSST, as ex-
+pected for subjects in a stressful condition. The statistical difference
+between the baseline and stress conditions were confirmed with the
+Wilcoxon signed-rank test. Overall, the experimental protocol (es-
+pecially with respect to the stress condition) is considered suitable
+to induce the desired affective states.
+5.2 Evaluation of Sensor Modalities and
+Extracted Features
+Based on the affective states of the study protocol (baseline, stress,
+and amusement condition), we distinguish two classification tasks.
+First, a three-class problem was defined: baseline vs. stress vs. amuse-
+ment. Results on this classification task are presented in Table 3.
+Second, a binary classification task was defined by combining the
+states baseline and amusement to a non-stress class, posing the stress
+vs. non-stress classification problem. Results of this classification
+task are presented in Table 4. For both classification tasks, 16 differ-
+ent modality combinations are evaluated:
+• each of the four modalities of the wrist-based device sepa-
+rately (ACC, BVP, EDA, and TEMP)
+• each of the six modalities of the chest-based device separately
+(ACC, ECG, EDA, EMG, RESP, and TEMP)
+• all modalities of one device (wrist or chest)
+• all physiological modalities of one device (same as last entry,
+but without ACC)
+• all modalities from both devices (wrist and chest) together
+• all physiological modalities from both devices together (same
+as last entry, but without ACC)
+Finally, the evaluation was performed using each of the five ma-
+chine learning algorithms, specified previously. Each setup (defined
+by the classification task, applied classifier, and included sensor
+modalities) was run five times, to report mean and standard devia-
+tion of the evaluation metrics (F1-score and accuracy). Since LDA
+and kNN are deterministic classifiers, only the mean values are
+reported.
+The data considered in this paper (belonging to the three affec-
+tive states of interest) amount to approximately 36 minutes per
+subject. With 15 subjects and using a sliding window of 0.25 sec-
+onds, approximately 133000 windows were generated. Out of these
+windows, 53 % belong to the baseline class, 30 % represent the stress
+class, and 17 % originate from the amusement condition. In the last
+two rows of Table 3 the baseline F1-score/accuracy of a random and
+a sophisticated guesser on the three-class problem are displayed.
+The random guesser is defined to choose one of the three possible
+classes at random, thus reaching an accuracy of 33 % and a F1-score
+of 32 %. In contrast, the sophisticated guesser would always choose
+the majority class. Hence, a sophisticated guesser would reach an
+accuracy of 53%. However, its’ F1-score would only be 32 %. In the
+two last rows of Table 4, the same type of random and sophisticated
+guesser are presented for the binary classification task.
+Comparing the performance of the employed algorithms, on the
+three-class task (Table 3) and binary classification task (Table 4), it
+becomes apparent that the ensemble-based methods (RF, AB) and
+the LDA reached similar classification scores. Depending on the
+input modalities, these classifiers reach scores up to 80 % for the
+three-class problem and up to 93 % for the binary task, respectively.
+Concluding from Table 3 and Table 4, the kNN had the overall worst
+performance, reaching accuracies of at most 60 % on the three-class
+problem, and 78 % in the binary task.
+Using only motion-based features (wrist and/or chest ACC)
+leads to considerably lower classification scores compared to re-
+sults obtained using physiological features. This suggests that the
+physiology-based features provide a deeper insight into the affec-
+tive states of the subjects than the motion patterns. Moreover, we
+can rule out the possibility that our classifiers only learned to dis-
+tinguish between motion patterns characteristic for the conditions
+of the protocol.
+In the three-class problem the accuracies using one of the wrist-
+based physiological modalities range from 59 % to 70 %. Using one
+of the physiological chest-based modalities on the same classifi-
+cation problem, accuracies between 54 % and 72 % are reached. In
+the binary classification task the accuracies using a wrist-based
+input modality range from 69 % to 86 % and the accuracies using
+one of the chest-based modalities range from 67 % to 88 %. In both
+classification tasks the RESP is a particularly strong chest-based
+modality leading to the best result of a single modality. Besides
+the stress-related changes in the respiration, this can be partially
+explained considering the fact that the study participants spoke dur-
+ing the TSST. Hence, the classifiers might have partially learned to
+distinguish between speaking (stress condition) and non-speaking
+episodes (baseline and amusement condition). In both classification
+tasks, using only the TEMP data, either chest or wrist-based, as
+input leads to low classification scores. Obviously, TEMP is not a
+well-suited modality to solely base the classification of affective
+states upon. Comparing the results obtained using only the wrist- or
+chest-based EDA data, the latter seems to hold more relevant infor-
+mation leading to somewhat higher accuracies in both classification
+tasks. In contrast, comparing the performance of classifiers solely
+relying on the BVP or ECG data, the former leads to slightly higher
+accuracies. The results reached using all physiological chest-based
+modalities (three-class accuracy: 80 %, binary accuracy: 93 %) are
+higher than the ones obtained using all physiological wrist-based
+
+
+
+
+
+140990
+Received August 19, 2019, accepted September 15, 2019, date of publication September 26, 2019, date of current version October 9, 2019.
+Digital Object Identifier 10.1109/ACCESS.2019.2944001
+A Review, Current Challenges, and Future
+Possibilities on Emotion Recognition Using
+Machine Learning and Physiological Signals
+PATRÍCIA J. BOTA 1,2, CHEN WANG3, ANA L. N. FRED1,2, (Member, IEEE),
+AND HUGO PLÁCIDO DA SILVA 1, (Senior Member, IEEE)1Instituto Superior Técnico, Instituto de Telecomunicações, 1049-001 Lisbon, Portugal2Department of Bioengineering, Instituto Superior Técnico, 1049-001 Lisbon, Portugal3Future Media & Convergence Institute (FMCI), Xinhuanet, Beijing 100000, China
+Corresponding author: Patrícia J. Bota (patricia.bota@tecnico.ulisboa.pt)
+This work was supported in part by the Xinhua Net Future Media Convergence Institute under Project S-0003-LX-18, in part by the
+Ministry of Economy and Competitiveness of the Spanish Government co-founded by the ERDF (PhysComp project) under Grant
+TIN2017-85409-P, and in part by the Instituto de Telecomunicações (IT) in the scope of program under Grant UID/EEA/50008/2019.
+ABSTRACT The seminal work on Affective Computing in 1995 by Picard set the base for computing that
+relates to, arises from, or influences emotions. Affective computing is a multidisciplinary field of research
+spanning the areas of computer science, psychology, and cognitive science. Potential applications include
+automated driver assistance, healthcare, human-computer interaction, entertainment, marketing, teaching
+and many others. Thus, quickly, the field acquired high interest, with an enormous growth of the number of
+papers published on the topic since its inception. This paper aims to (1) Present an introduction to the field of
+affective computing though the description of key theoretical concepts; (2) Describe the current state-of-the-
+art of emotion recognition, tracing the developments that helped foster the growth of the field; and lastly,
+(3) point the literature take-home messages and conclusions, evidencing the main challenges and future
+opportunities that lie ahead, in particular for the development of novel machine learning (ML) algorithms in
+the context of emotion recognition using physiological signals.
+INDEX TERMS Affective computing, emotion recognition, machine learning, physiological signals, signal
+processing.
+I. INTRODUCTION
+Affective computing was defined by Rosalind Picard as the
+computing that relates to, arises from, or influences emo-
+tions [1]. This emerging field focuses on better understanding
+the psychophysiological phenomena underlying the ways in
+which humans recognise, interpret and simulate emotional
+states [2]. Therefore, it is a multidisciplinary field of research
+spanning the areas of computer science, psychology, and
+cognitive science. Emotions possess a nuclear role in human
+behaviour, exerting a powerful influence in mechanisms such
+as perception, attention, decision making and learning. Thus,
+understanding emotional states is essential to understand
+human behaviour, cognition and intelligence [1].
+The field of affective computing presents applications in
+many areas, including automated driver assistance- through
+The associate editor coordinating the review of this manuscript and
+approving it for publication was Abdel-Hamid Soliman .
+alert systems monitoring the user sentic state by means of
+physiological signals. The system could be capable of warn-
+ing the user if he is sleepy, unconscious or unhealthy to drive,
+lowering the speed or stopping the car if necessary, towards a
+more safe and secure driving experience. In a driving setting,
+the user’s physiological signals could be read unobtrusively
+and pervasively through non-intrusive techniques integrated
+into components with which the driver naturally interacts
+with, such as the steering wheel [3].
+In healthcare, through wellness monitoring, one can envi-
+sion the ability to create an individual profile identifying
+causes of stress, anxiety, depression or chronic diseases. The
+profile could be kept private or shared with a professional.
+Another possible application includes teaching, enhancing
+the human-computer interaction through the adaptation of the
+study material and teaching velocity to the subject response
+in each exercise, its personality and current mood; Recom-
+mendation Systems- adapting the movie, TV series or music
+140990 This work is licensed under a Creative Commons Attribution 4.0 License. For more information, see http://creativecommons.org/licenses/by/4.0/ VOLUME 7, 2019
+P. J. Bota et al.: Review, Current Challenges, and Future Possibilities on Emotion Recognition Using ML and Physiological Signals
+recommendation to the user likes and preferences according
+to its pre-emotional responses.
+Humans often communicate emotions and their current
+sentic state via extraneous body expressions such as with a
+smile or more physiological expressions, such as an increase
+in heart rate (HR). These body expressions occur naturally
+and subconsciously. Several theorists argue that each emotion
+provokes its own unique somatic response [1]. Therefore,
+the modulation of the motor system expressions, sentic mod-
+ulation, can be used to infer the individual emotional state.
+Physical manifestations are easily collected; however, they
+present low reliability since they depend on the user social
+environment, cultural background (if he is alone or in a group
+setting), their personality, mood, and can be easily faked,
+becoming compromised [4]. On the other hand, these con-
+straints do not apply to physiological signals, such as the HR,
+perspiration, pupil dilation, among others. Alterations in the
+physiological signals are not easily controlled by the subject,
+presenting a more authentic look into the subject emotional
+experience. For this reason, in this paper, we will focus on
+the recognition of human emotions based on physiological
+signals.
+This survey aims to showcase the evolution and current
+landscape of emotion recognition systems based on physi-
+ological signals. We start by including a solid overview of
+fundamental theoretical concepts, providing a review of state-
+of-the-art publications and current researchers (see Fig. 1,
+where a histogram of the number of publications surveyed
+for this document per year of publication is displayed). Then,
+from the surveyed papers, the most relevant results, chal-
+lenges, and the most promising future possibilities are dis-
+cussed as a guide to new and current researchers with a focus
+on each part of an emotion recognition system from emotion
+elicitation to decision.
+FIGURE 1. Histogram of the number of publications surveyed for this
+document per year of publication.
+The remaining of this paper is organised as follows: In
+Section II the theoretical concepts needed to contextualise the
+reader are presented, with essential principles applied in the
+field of affective computing. Then, in Section III, we describe
+the key main steps required for the development of a novel
+Machine Learning (ML) algorithm for emotion assessment.
+In Section IV, the emotion recognition state-of-the-art liter-
+ature is discussed and its main take-home messages iden-
+tified. Lastly, the main conclusions and challenges derived
+from literature are described, along with recommendations
+for further work on the field.
+II. THEORETICAL BACKGROUND
+In this section we provide essential theoretical background for
+the concepts needed to develop novel algorithms for emotion
+recognition. We start by introducing the concept of emotion
+and its two main forms of characterisation: continuous and
+discrete in sub-sections II-A.1 and II-A.2, respectively. Then,
+in sub-section II-B, the Autonomic Nervous System (ANS)
+is introduced and its correlation with emotion generation
+explained. Next, in sub-section II-C, common state-of-the-
+art sensors used in affective computing and their correlation
+to sentic state assessment is described. Benchmark datasets
+used in emotion recognition are presented in sub-section II-F
+and, lastly, literature assessment methods are presented in
+sub-section II-E.
+A. EMOTION MODELS
+The first question in order to recognise emotions should be to
+define the concept of emotion. What is an emotion? Theorists
+from multidisciplinary fields such as neuroscience, philoso-
+phy and computer science have tried to answer this question
+and define a universal definition of emotion. However, with
+discord, thus, there is no single widely acknowledged defini-
+tion. In ML, a definition of emotion is especially important
+since it is necessary to establish the targeting criteria of
+success. A common approach to mitigate this problem is to
+define emotions according to two models. One decomposes
+emotions in continuous dimensions and the second in discrete
+categories [1].
+1) DISCRETE EMOTION SPACES
+Since the ancient of times, emotion and feelings have been
+the thought of many philosophers. Per example, Cicero and
+Graver [5] back in the Roman empire organised emotions in
+four basic categories: Fear, Pain, Lust, Pleasure. Meanwhile,
+for Darwin [6], along with the theory of natural selection,
+emotions have an evolutionary history and are shared across
+cultures. Ekman [7] continued his work and argued that emo-
+tions are shared between cultures, thus, able to be universally
+recognised. Ekman described emotions as discrete, measur-
+able and physio-related, arising from evolutionary evolved
+physiological and communicative functions. Hence, physio-
+logical expressions deriving from emotions functioned as a
+warning, sometimes separating life and death scenarios [8].
+Ekman enumerated six basic emotions: Happy, Sad, Anger,
+Fear, Surprise and Disgust, with more complex emotions
+created as a combination of these basic emotions.
+Plutchik [9] proposed a taxonomy to classify emotions
+in the form of a wheel model (Fig. 2) incorporating eight
+basic emotions: Joy, Trust, Fear, Surprise, Sadness, Anger,
+VOLUME 7, 2019 140991
+P. J. Bota et al.: Review, Current Challenges, and Future Possibilities on Emotion Recognition Using ML and Physiological Signals
+FIGURE 2. Plutchik wheel theory of emotion [9].
+Disgust and Anticipation. In his taxonomy, once again, emo-
+tions can be mixed to form complex forms, personality traits
+and psychopathology. However, his taxonomy differs through
+the incorporation of intensity levels, as shown in Fig. 2,
+where stronger emotions occupy the centre, while weaker
+emotions occupy the extremities. Then, in [10], [11], Izard
+suggested 10 basic emotions: Interest, Joy, Surprise, Sadness,
+Fear, Shyness, Guilt, Angry, Disgust and Contempt. Izard
+advocated that emotions are the result of human evolution,
+and each emotion is correlated to a simple brain circuit where
+a complex cognitive component is not involved.
+Lastly, Damasio [12] defined emotion as a neutral reaction
+to a certain stimulus, which can be categorised as primary
+(deriving from innate fast and responsive ‘‘flight-or-fight’’
+behaviour) or secondary (deriving from cognitive thoughts).
+In all the aforementioned theories of emotion, human
+emotional experiences are described in words. However,
+a discrete qualification of emotions can present difficul-
+ties, since complex mixed emotions can be difficult to
+precise and different individuals/cultures may describe a sim-
+ilar experience with different words. In order to overcome
+these difficulties, many authors have adopted the concept of
+continuous multi-dimensional space models. In a continu-
+ous multi-dimensional space model, emotions are measured
+along a defined axis, thus, simplifying the process of compar-
+ison and emotion discrimination.
+2) CONTINUOUS DIMENSIONS
+A continuous description of emotion must address two issues:
+The possibility to describe correlation among different emo-
+tional states, for example, Grief vs Sadness, Admiration vs
+Trust; and the quantification in a given state, for example,
+FIGURE 3. Valence-arousal model of emotion [14].
+very sad vs sad vs not sad. A first approach was proposed
+by Schmidt et al. [8], where emotions were described as a
+single point in a pleasure-displeasure, excitement-inhibition,
+tension-relaxation three-dimensional space.
+Following Wundt, Schmidt et al. [8] suggested a
+valence-arousal two-dimensional model where different
+emotions are described. The valence axis denotes how pos-
+itive (pleasant) versus negative (unpleasant) the emotion is,
+while the arousal axis indicates its activation/intensity level.
+Similarly, Lang [13] described emotions in two-
+dimensions: Valence (negative/positive) and Arousal (calm/
+excited). Fig. 3 displays the mapping of several emotions on
+the two-dimensional valence-arousal space.
+Mehrabian [15] added a new dimension to describe the
+consciousness of the emotion, denoted as dominance (Fig. 4),
+facilitating the discrimination between emotions such as
+Fear vs Anger [4]. From all the aforementioned models,
+the valence-arousal is the most commonly applied due to
+its low simplicity of integration into an emotion assessment
+questionnair and low complexity in the modelling of ML
+algorithms, attaining overall good results.
+B. AUTONOMIC NERVOUS SYSTEM
+According to Levenson [17], emotions were preserved across
+natural selection due to the need for an efficient mecha-
+nism able to mobilise and organise the selection of quick
+responses from highly differentiate and disparate systems
+when environmental stimuli pose a threat to survival. Thus,
+in order to give a quick response to life-threatening situations,
+the emotion system is able to override high cortex function-
+alities, with quick, automated responses coordinated by the
+ANS. Levenson’s theory has been supported by many theo-
+rists, however, they lack consensus on how many different
+emotional states are associated with distinct patterns of the
+ANS [17].
+140992 VOLUME 7, 2019
+P. J. Bota et al.: Review, Current Challenges, and Future Possibilities on Emotion Recognition Using ML and Physiological Signals
+FIGURE 4. Mehrabian three-dimensional space theory of emotion [16].
+On one hand, a few theorists defend that there are only two
+ANS patterns: The ‘on’ status and the ‘off’ status. Others the-
+orists postulate that there is a large number of patterns of ANS
+activation, each associated with a different emotion [17].
+The ANS is mediated by the two branches of the ANS. The
+‘on’ status is mediated globally by the Sympathetic Nervous
+System (SNS) and the ‘off’ by the Parasympathetic Nervous
+System (PNS) [17]. The SNS is activated during physically
+or mentally stressful situations, thus, controlling the body
+responses to threats. The SNS is responsible for the increase
+in HR due to the increase in the sino-atral (SA) stimulation
+and for increasing the strength of contractions due to an
+increase in the propagation velocity of the depolarisation
+wave that travels through the heart, bronchial tubes dilation,
+muscles contraction, pupils dilation, decrease in stomach
+movement and secretions, decrease in saliva production and
+lastly, release of adrenaline. On the other hand, the PNS
+is responsible for homeostasis, i.e. the maintenance of the
+internal bodily milieu while at rest: slowing down the HR,
+decrease in the blood pressure and increase in the digestive
+system activity, bronchial tubes constriction, muscles relax-
+ation, pupils constriction, increase in stomach movement
+and secretions, increase in saliva production and increase in
+urinary output. The SNS is often referred to as the ‘‘fight-
+or-flight’’ response, i.e. the activating and energising system;
+while the PNS is referred to as the ‘‘rest-and-digest’’ system.
+However, although this metaphor might fit the heart, for the
+remaining systems of the ANS the same is not verified, since
+the PNS causes increased activation in salivary glands, tear
+ducts, and the stomach and intestinal activity [17].
+The ANS is responsible for many functions: serving as
+regulator, through the homeostasis, maintaining our internal
+bodily milieu within strict limits so as to minimise damage
+and maximise functioning; as an activator, allocating body
+resources in order to better respond to internal or external
+stimulus; as an coordinator, organising a continuous bidirec-
+tional flow of data between the somatic and brain systems;
+and, lastly as a communicator, through body responses with
+discernible dynamic variations for conspecifics [17].
+This multi-dimensional functionality of the ANS increases
+notably the difficulty of correlating a subject emotional state
+with their current physiological signals, since, when a certain
+change in a physiological signal occurs, such as increase of
+the HR or respiration, it is more likely to have resulted from
+one of the several ANS non-emotional functionalities than
+from an emotional one [17].
+C. PHYSIOLOGICAL SIGNALS
+As stated, emotional states are associated with discernible
+ANS physiological responses. These responses can be read
+through body-worn physiological sensors such as the ECG,
+EEG, EDA, and BVP, which are briefly described below.
+The figures displayed in this section were obtained using
+the BioSPPy library [18], a Python library for physiological
+signals processing.
+(a) Electrocardiography (ECG): is a numerical recording
+of the potential differences that are propagated to the
+skin surface resulting from the electrical activity of the
+heart (arising from the contraction and relaxation of
+the cardiac muscle when electrically stimulated). The
+heart’s contraction and relaxation rate is the result of
+three main components: (a) The action of the SA node,
+localised in the right atrium at the superior vena cava,
+which receives inputs from both branches of the ANS
+to initiate the cardiovascular activity with an intrin-
+sic frequency of 100-120 bpm [17]; (b) PNS fibres
+modulated by the vagal nerve, slowing down the HR
+to approximately 70 bpm; (c) SNS fibres modulated
+by the post-ganglionic fibre, increasing the HR during
+an emotional episode or non-emotional ANS modula-
+tion [17]. This complementary modulation between the
+two branches of the ANS system is known as sympa-
+thovagal balance. Thus, the HR is a function of the ANS
+activity, which in turn is dependent on emotional stim-
+uli, therefore, information about the emotional state can
+be inferred from the ECG data [19]. The ECG should
+be sampled with high-frequency rate (500-1000 Hz)
+in order to be possible to more accurately determine
+the instants when the heartbeats occur and use these
+instants to calculate and modulate the HR. The ECG
+signal presents amplitudes between 10uV (fetal) to
+5mV (adult). Fig. 5 displays an ECG and some of its
+main characteristics, namely, the R peaks and HR.
+(b) Electrodermal Activity (EDA)/ Galvanic Skin
+Response (GSR): provides a measure of the resistance
+of the skin by passing a negligible current or voltage
+through the body and measuring the voltage or current
+variation between the two sensor leads, respectively.
+Thus, the skin is considered to be equivalent to a vari-
+able resistor. When given a known voltage or current,
+the other is measured and the skin conductance level
+VOLUME 7, 2019 140993
+P. J. Bota et al.: Review, Current Challenges, and Future Possibilities on Emotion Recognition Using ML and Physiological Signals
+FIGURE 5. Raw Electrocardiography (ECG) sensor signal, filtered signal,
+heartbeats waveform templates and its main data characteristics
+(R-peaks and heart rate (HR)).
+derived from G = 1/R;R = V/I. Fig. 6 displays
+a common EDA signal and its main characteristics.
+As observed, the EDA signal is characterised by a
+baseline, from which, phasic perturbations arise in
+response to certain events. Thus, an EDA signal can be
+decomposed in two main components: a baseline tonic
+component of low bandwidth (f < 3Hz) expressing the
+thermal regulation activities denoted as Electrodermal
+level (EDL), and an Electrodermal Response (EDR)
+phasic component expressing psychological-related
+responses when an SNS regulatory activity occurs. The
+mean value of the EDA signal enables to infer the level
+of arousal and activation of SNS system since the EDR
+response is usually observable in a stressful or surprise
+event when an increase of perspiration decreases the
+skin resistance [20], [21]. Ionic sweat is more con-
+ductive than dry skin, hence, causes an increase in
+conductivity proportional to the amount the glands
+have filled coordinated by the sympathetic activation
+due to external sensory or a cognitive stimuli [19].
+Thus, the EDA provides a non-intrusive look into ANS
+activity through the EDR psychological response to
+certain stimuli. The EDA electrodes are usually placed
+at areas of high sweat glad density, such as on the 2nd
+phalanx of the index and middle fingers, the index and
+ring fingers, the hand or feet palms [8]. The EDA data
+has been used to study emotion-related PNS activity
+with applications such as deception, stress, frustration,
+arousal and anxiety detection [8].
+(c) Photoplethysmography (PPG) or Blood Volume
+Pulse (BVP): a photodiode measures the amount of
+backscattered light by a skin voxel. Thus, in a BVP sig-
+nal, the amount of light that returns or passes through
+the finger to a BVP sensor is proportional to the volume
+of blood in the tissue. Hence, it is possible to detect
+the heartbeats through the pulse local maximum by the
+passage of blood, indicating each cardiac cycle from
+which the HR can be inferred. The sensor is usually
+placed in the subject index finger.
+FIGURE 6. Raw Electrodermal Activity (EDA) sensor signal, filtered signal,
+Electrodermal Response (EDR) amplitudes and its main data
+characteristics (onsets, peaks, recovery rates).
+FIGURE 7. Raw Blood Volume Pulse (BVP) sensor signal, filtered signal
+and its main data characteristics (onsets and HR).
+The BVP sensor data is highly prone to noise with its
+quality depending on the sensor location, motion, exter-
+nal light artefacts and subject dependent physiological
+characteristics, such as: level of tan, skin absorption
+properties, skin structure, the blood oxygen saturation,
+blood flow rate, skin temperatures and the measuring
+environment [8], [22]. Fig. 7 displays a BVP signal and
+some of its main characteristics.
+As stated in Section II-B, the ANS is responsible
+for dilating or contracting the blood vessels diameter.
+Hence, changes in BVP amplitude reflect instantaneous
+sympathetic activation such as in high arousal and
+pleasant situations where the SNS increases the blood
+pressure and heart rate variability (HRV), both possible
+metrics to be deduced from the BVP signal in order
+to modulate the user sentic state. For example, when
+a person relaxes, vasodilatation usually occurs which
+is reflected as an increase in the blood flow volume,
+consequently affecting the BVP amplitude; when anx-
+ious or fearful, the opposite is verified [23]. Generally,
+the BVP sensor data is recorded using sampling rates
+below 100Hz [8].
+(d) Respiration (RESP): usually in the form of a chest
+belt worn in the thorax or the abdominal area, it is
+used to measure the respiration pattern, namely, how
+140994 VOLUME 7, 2019
+P. J. Bota et al.: Review, Current Challenges, and Future Possibilities on Emotion Recognition Using ML and Physiological Signals
+FIGURE 8. Raw Respiration (RESP) sensor signal, filtered signal and its
+main data characteristics (zero-crossings, respiration rate).
+deep and fast a subject is breathing [8]. During a res-
+piration cycle, the thorax expands and constricts in
+the inhalation and exhalation of air resulting in the
+stretching and de-stretching of the chest belt. From
+this movement, the respiration rate and volume can be
+derived [8]. Regarding emotion recognition, the respi-
+ration rate with fast and deep breathing can indicate
+high arousal such as anger, fear, or joy, rapid shallow
+breathing can indicate tense anticipation, such as panic,
+fear or concentration, slow and deep breathing indi-
+cates a relaxed resting state while slow and shallow
+breathing can indicate states of withdrawal, passive like
+depression or calm happiness [24]. In the literature,
+a few papers have proposed ECG-derived respiration
+techniques allowing to obtain the respiration waveform
+from an ECG signal, namely from the RS-decline quan-
+tified by central moments, respiratory sinus arrhythmia,
+R-wave amplitude, QRS area, RS-distance and maxi-
+mum RS-slope [25], [26]. Fig. 8 displays a RESP signal
+and some of its main characteristics.
+(e) Skin Temperature (Temp) or (SKT): can be
+measured using an infrared thermopile or a temperature-
+dependent resistor at the skin surface. The temperature
+of the human skin can change for numerous reasons
+correlated with main functions of the ANS such as
+physical exercise, physiological conditions, environ-
+mental conditions and emotional reactions through
+mechanisms such as sweating, shivering, vasocon-
+striction or vasodilatation. For example, sweating and
+vasoconstriction decrease the body temperature, while
+vasodilation and shivering, increase the heat production
+in the muscles, thus, increasing the skin surface tem-
+perature [23]. When the muscle contracts or relaxes,
+vasoconstriction or dilatation occur, respectively. The
+smooth muscle contraction is regulated by the SNS,
+which is linked to emotion. Hence, SKT can provide
+a look into the ANS system. For example, in a ‘fight-
+or-flight’ response mediated by the SNS, the muscles
+under strain show high vascular resistance and increase
+the arterial flow. The blood flow to the extremities
+FIGURE 9. Raw Electromyography (EMG) sensor signal, filtered signal and
+event onsets.
+becomes restricted in favour of increased blood sup-
+ply to the vital organs, decreasing the temperature of
+the extremities [8], [19]. The literature describes the
+use of temperature, however, in theory, it should take
+several minutes for a change in the body temperature
+to be noticeable, displaying overall small amplitude
+variations.
+(f) Electromyography (EMG): measures the skeletal
+muscle electric activity with a skin surface electrode
+or with a needle electrode. Upon a muscle contraction,
+there is an amplitude rise in the EMG signal from an
+electrical potential difference that appears between the
+interior and the exterior of the muscle cell. The differ-
+ence is short-lasted and is denoted as an action poten-
+tial. The EMG signal presents amplitudes between
+50uV-30mV and bandwidth between 2-500Hz. The
+surface EMG sensors placement can be directed for
+emotion recognition of both facial or body expressions
+in order to capture the subject facial expression or
+stress. Common placements are the on trapezoid and
+the Zygomaticus major to modulate head movements
+and tension; laugh or a smile, respectively. Fig. 9 dis-
+plays a raw and filtered EMG signal.
+(g) Electroencephalography (EEG): is a measurement
+of the electrical field from currents that flow during
+neurons synaptic excitation in the cerebral cortex when
+these are activated. All of the aforementioned sensors
+record changes in the physiology of various organs
+as a result of ANS adaptations; in contrast, the EEG
+records the aggregate potential differences from active
+neurons, thus, capturing an electrical perspective on the
+local source of the ANS activity from the CNS. The
+EEG signal presents amplitudes between 2-100uV on
+the scalp and a dynamic range between 0.5-60Hz. The
+brain is the main control unit for all the functions of
+the organism, including the control of the body move-
+ment, sensory processing, language and communica-
+tion, memory and emotions. Therefore, EEG can be
+used to correlate emotion generation and brain regions.
+Fig. 10 displays a raw and filtered EEG signal.
+VOLUME 7, 2019 140995
+P. J. Bota et al.: Review, Current Challenges, and Future Possibilities on Emotion Recognition Using ML and Physiological Signals
+FIGURE 10. Raw Electroencephalography (EEG) sensor signal and filtered
+signal.
+(h) Eye Gaze: Measured through Electrooculography
+(EOG), Infrared Reflection Oculography IROG) or
+photoelectric techniques; the EOG measures the resting
+potential of the eye and its variations derived from hor-
+izontal and vertical eye movements. The EOG works
+based on the fact that the eye act as an electrical dipole
+between the positive potential of the cornea and the
+negative potential of the retina, maintained by means
+of active ion transport. Therefore, an electrode placed
+in the vicinity of the eye will become more positive
+when the eye rotates towards it, and less positive when
+it rotates in the opposite direction [27]. Other com-
+mon techniques are the Infrared Reflection Oculog-
+raphy IROG) and the photoelectric techniques, which
+rely on the fact that the white sclera reflects more
+light than the pupil and the iris. Hence, when the eye
+moves to one side, less infrared light is reflected to the
+detector on one side of the eye and vice-versa. These
+approaches are based on videooculography and Purk-
+inje eye-trackers, which uses head-mounted minia-
+turised video cameras to track the image of the pupil or
+of the light reflexes [27]. The amount of light entering
+the eyes is regulated by radial and circulatory fibres
+innervated by the PNS and SNS systems, respectively,
+regulating the dilation and constriction of the muscle
+fibres. Thus, by an EOG or using an eye tracker, infor-
+mation about the ANS can be deduced. The literature
+shows that the pupillary responses, frowns and blinks
+have distinct patterns according to different human
+emotional states, however, with conflicting results. Per
+example, the rate of blinks and saccades is found to
+provide information regarding fatigue or anxiety, while
+the focus on a point indicates high attention. Fig. 11
+displays a raw and filtered EOG signal.
+Fig. 12 displays a histogram with the number of sensors
+used in each publication surveyed for this document. As it
+is possible to observe the GSR, ECG, and Resp sensors are
+the three most commonly applied in literature; in contrast
+to the EOG, BVP and ACC. The ECG, EDA, EMG, SKT
+FIGURE 11. Raw Electrooculography (EOG) sensor signal and filtered
+signal.
+FIGURE 12. Histogram of the number of publications surveyed for this
+document per sensor.
+and RESP present the advantage of being easily introduced
+in wearable systems with great comfort to the user. Lastly,
+inertial sensors such as the Accelerometer (ACC), Gyroscope
+(GYR), Barometer (BAR) and Magnetometer (MAG), gen-
+erally used for human activity recognition, could be used
+to correlate each emotional state with certain activities and
+derive contextual information about the daily living, likes-
+dislikes, and preferences of the subject.
+D. EMOTION ELICITATION MATERIAL
+Due to the high subjectivity and variability in emotion elici-
+tation, it is important to use a set of pre-validated emotional
+stimuli in order to ensure the expression of a wide spectrum
+of emotions and of high intensity each. In literature, this is
+performed by selecting the elicitation material from different
+affective categories presenting the most consensual and reli-
+able self-ratings across different subjects.
+Within the state-of-the-art, affect elicitation is commonly
+performed via pictures [28], films [29], VR videos [30],
+games [31]–[36], music videos [21], sound [37], [38], words
+[39], recall [40]–[43] or in well controlled settings, although
+real-world scenarios have started to be explored [44].
+140996 VOLUME 7, 2019
